@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leesvaardigheidsspel Engels (A2-B2) - Score en Voortgang</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            margin: 20px;
+            text-align: center;
+        }
+
+        #gameContainer {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            position: relative;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        #textContainer {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+        }
+        
+        #textContainer > .sentence:nth-child(2) {
+            margin-left: 0;
+        }
+
+        .sentence {
+            display: inline;
+            cursor: pointer;
+            padding: 2px 4px;
+            margin-right: 3px;
+            border-radius: 4px;
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+
+        .sentence:hover {
+            background-color: #bdc3c7;
+        }
+
+        .sentence.correct {
+            background-color: #2ecc71;
+            color: white;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        .sentence.incorrect {
+            background-color: #e74c3c;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 0 5px #e74c3c;
+        }
+
+        .question {
+            font-size: 1.3em;
+            color: #2980b9;
+            margin-top: 15px;
+            padding: 10px;
+            border-left: 5px solid #2980b9;
+            background-color: #f8fbfc;
+        }
+
+        #feedback {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        #gameInfo {
+            display: none;
+            justify-content: space-between; 
+            align-items: center;
+            margin-bottom: 15px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        #scoreDisplay {
+            font-weight: bold;
+            color: #2ecc71;
+            font-size: 1.1em;
+        }
+
+        #progressBar {
+            flex-grow: 1; 
+            height: 10px;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin: 0 20px;
+            overflow: hidden;
+        }
+
+        #progress {
+            height: 100%;
+            width: 0%;
+            background-color: #3498db;
+            transition: width 0.4s ease-out;
+        }
+        
+        #startButton {
+            padding: 10px 20px;
+            font-size: 1.1em;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: block;
+            margin: 20px auto 0;
+        }
+
+        #startButton:hover {
+            background-color: #2980b9;
+        }
+        
+        #endMessage {
+            font-size: 1.5em;
+            color: #27ae60;
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            border: 2px solid #27ae60;
+            border-radius: 8px;
+            background-color: #e8f8f5;
+        }
+
+        .medal {
+            font-size: 2.5em;
+            margin-top: 10px;
+        }
+        .medal.gold { color: gold; }
+        .medal.silver { color: silver; }
+        .medal.bronze { color: #cd7f32; }
+
+        .restart-button-group button {
+            padding: 10px 15px;
+            margin: 10px 5px;
+            font-size: 1em;
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            transition: background-color 0.3s;
+        }
+        #restartFast { background-color: #3498db; color: white; }
+        #restartFull { background-color: #9b59b6; color: white; }
+
+        /* Popup Styles */
+        #unlockPopup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            z-index: 1000;
+            text-align: center;
+            border: 3px solid #f1c40f;
+        }
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        #closePopup {
+            margin-top: 15px;
+            padding: 8px 20px;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div id="overlay"></div>
+<div id="unlockPopup">
+    <h2>🎉 Gefeliciteerd!</h2>
+    <p>Je hebt een score van 18/27 behaald.</p>
+    <p><strong>Het volgende spel is nu unlocked!</strong></p>
+    <button id="closePopup">Verder Spelen</button>
+</div>
+
+<div id="gameContainer">
+    <h1>📚 English Reading Skills Game (A2-B2)</h1>
+    
+    <div id="gameInfo">
+        <span id="scoreDisplay">Score: 0/0</span>
+        <div id="progressBar"><div id="progress"></div></div>
+        <span id="currentLevel">Level: A2</span>
+    </div>
+
+    <div id="textContainer">
+        <p id="questionDisplay" class="question">Klik op start om te beginnen.</p>
+    </div>
+    
+    <button id="startButton">Start Spel</button>
+
+    <div id="feedback"></div>
+</div>
+
+<script>
+    const gameData = [
+        { id: 1, level: 'A2', text: "My favorite season is summer. The weather is warm and sunny, and the days are long. I enjoy spending time outside with my family and friends. We often go to the beach or swim in the pool. I like wearing light clothes such as shorts, T-shirts, and sandals. In summer, many people take holidays. They travel to different places and try new activities. I also enjoy eating summer food. I love ice cream, fresh fruit, and cold drinks. Summer makes me happy because I can relax, play sports, and have fun. It is the best time of the year for me.", questions: [ { q: "What is the writer’s favorite season?", a: "My favorite season is summer." }, { q: "Where do they often go in summer?", a: "We often go to the beach or swim in the pool." }, { q: "Why does summer make the writer happy?", a: "Summer makes me happy because I can relax, play sports, and have fun." } ] },
+        { id: 2, level: 'A2', text: "I go to school from Monday to Friday. I always wake up at 7:00 in the morning. I get dressed and eat breakfast with my family. Then I walk to school with my friend. We start lessons at 8:30. My favorite subject is English because I like learning new words. At school, we study math, science, and history. We also have a break in the morning and in the afternoon. We eat lunch in the cafeteria. After school, I do my homework at home. In the evening, I watch TV or play games. I enjoy school because I can learn and meet my friends every day.", questions: [ { q: "When does school start?", a: "We start lessons at 8:30." }, { q: "What is the writer’s favorite subject?", a: "My favorite subject is English because I like learning new words." }, { q: "What does the writer do after school?", a: "After school, I do my homework at home." } ] },
+        { id: 3, level: 'A2', text: "My best friend is Anna. She is twelve years old and she is in my class. She has long brown hair and blue eyes. She is very friendly and always helps other people. We like to spend time together. We often play games, listen to music, or go to the park. We also study together for school tests. Anna is funny, and she always makes me laugh. I can talk to her about everything. She is a very good friend, and I am happy that I know her. I hope we will stay friends for a long time.", questions: [ { q: "What does Anna look like?", a: "She has long brown hair and blue eyes." }, { q: "What do the writer and Anna like to do together?", a: "We like to spend time together." }, { q: "Why is the writer happy to know Anna?", a: "She is a very good friend, and I am happy that I know her." } ] },
+        { id: 4, level: 'B1', text: "Living in a big city can be exciting, but it also has some challenges. Many people like the city because there are many opportunities. You can find different restaurants, shops, and entertainment. There are also more jobs, so people move to cities to find work. However, city life can be stressful. The streets are crowded and noisy, and the cost of living is usually high. Many people also live in small apartments because rent is expensive. Even so, I enjoy living in a big city. There are many things to do and new people to meet. You can visit museums, go to concerts, or enjoy the nightlife. A big city never feels boring because something is always happening.", questions: [ { q: "Why do many people move to big cities?", a: "There are also more jobs, so people move to cities to find work." }, { q: "What are some problems of city life?", a: "The streets are crowded and noisy, and the cost of living is usually high." }, { q: "Why does the writer enjoy living in a big city?", a: "There are many things to do and new people to meet." } ] },
+        { id: 5, level: 'B1', text: "Learning a new language is not easy, but it is very rewarding. It takes time and patience to understand new words and grammar rules. Many people feel shy when they speak, especially when they make mistakes. But making mistakes is a normal part of learning. One of the best ways to improve a language is to practice every day. You can read books, watch movies, or talk with native speakers. When you use the language in real situations, you learn faster. It is important to stay motivated and not give up. If you continue practicing, you will become more confident and fluent over time.", questions: [ { q: "Why is it not easy to learn a new language?", a: "It takes time and patience to understand new words and grammar rules." }, { q: "What are some ways to practice a language?", a: "You can read books, watch movies, or talk with native speakers." }, { q: "What advice does the writer give to improve language skills?", a: "It is important to stay motivated and not give up." } ] },
+        { id: 6, level: 'B1', text: "Having a healthy lifestyle is important for both your body and mind. Many people think being healthy only means eating vegetables and exercising. Of course, food and sport are important, but they are not the only things. Sleeping well and managing stress are also part of a healthy life. When people don’t sleep enough, they can feel tired and unhappy. Stress can also make people sick. It can cause headaches or make it difficult to concentrate. A healthy lifestyle is about balance. You should eat well, move your body, sleep enough, and take time to relax. When you take care of yourself, you feel better and have more energy.", questions: [ { q: "Why is a healthy lifestyle important?", a: "Having a healthy lifestyle is important for both your body and mind." }, { q: "Besides food and exercise, what other things are important for health?", a: "Sleeping well and managing stress are also part of a healthy life." }, { q: "What symptoms can stress cause?", a: "It can cause headaches or make it difficult to concentrate." } ] },
+        { id: 7, level: 'B2', text: "Social media has become an important part of everyday life, especially for young people. Many people use social platforms to communicate with friends, share photos, and follow the news. Social media can be helpful because it connects people who live far away. It also allows people to express their opinions and creativity. However, there are some negative effects as well. Some experts believe that social media can create pressure to look perfect or have an exciting life. This can cause stress, anxiety, or low self-esteem. Another problem is that social media often takes a lot of time. People sometimes spend hours scrolling without realizing it. Still, social media is not only bad. It can be educational and inspiring when used responsibly. The real challenge today is finding a healthy balance between online and offline life.", questions: [ { q: "What is one positive effect of social media?", a: "Social media can be helpful because it connects people who live far away." }, { q: "What problem can social media create for people?", a: "This can cause stress, anxiety, or low self-esteem." }, { q: "What does the writer say is the main challenge?", a: "The real challenge today is finding a healthy balance between online and offline life." } ] },
+        { id: 8, level: 'B2', text: "Traveling is more than just visiting a new place; it is an opportunity to grow. People who travel learn about different cultures, languages, and lifestyles. They discover that the world is bigger than the city or country where they live. Traveling can also change your perspective. When you meet people from other backgrounds, you start to understand different opinions and ideas. This makes you more open-minded and responsible. Of course, traveling is not always easy. It can be expensive and sometimes uncomfortable. But these challenges are part of the experience. Many travelers believe that traveling teaches you more than school or work ever could. It allows you to develop independence, confidence, and problem-solving skills. Most importantly, travel creates memories that last a lifetime.", questions: [ { q: "How can travel change your perspective?", a: "When you meet people from other backgrounds, you start to understand different opinions and ideas." }, { q: "Why do many travelers believe traveling is valuable?", a: "Many travelers believe that traveling teaches you more than school or work ever could." }, { q: "What is one personal skill that travel can improve?", a: "It allows you to develop independence, confidence, and problem-solving skills." } ] },
+        { id: 9, level: 'B2', text: "Technology has changed the modern workplace in many positive ways. Computers, smartphones, and online tools make communication faster and more efficient. Many companies now allow employees to work from home. This creates more freedom and helps workers balance their work and personal life. Technology also increases productivity because it makes difficult tasks easier. However, technology can also create problems. Some workers feel overwhelmed because they are always available online. They receive emails and messages even after work, which makes it difficult to relax. Another challenge is that some jobs are disappearing because machines and software can do the work faster. Because of these changes, workers need new skills and training to stay successful. Even though technology has disadvantages, it continues to improve workplaces and change the way we work.", questions: [ { q: "Why does technology increase productivity?", a: "Technology also increases productivity because it makes difficult tasks easier." }, { q: "What problem do some workers face because of technology?", a: "Some workers feel overwhelmed because they are always available online." }, { q: "Why do workers need new skills?", a: "Because of these changes, workers need new skills and training to stay successful." } ] }
+    ];
+
+    let currentTextIndex = 0, currentQuestionIndex = 0, correctAnswersInRow = 0, isGameRunning = false;
+    let totalQuestions = 0, answeredQuestions = 0, score = 0, skippedQuestions = 0, adaptiveMode = true;
+    let unlockShown = false; // Voorkomt dat de popup vaker dan 1 keer verschijnt
+
+    const startButton = document.getElementById('startButton');
+    const gameInfo = document.getElementById('gameInfo');
+    const textContainer = document.getElementById('textContainer');
+    const questionDisplay = document.getElementById('questionDisplay');
+    const feedbackDiv = document.getElementById('feedback');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const progressBar = document.getElementById('progress');
+    const currentLevelSpan = document.getElementById('currentLevel');
+    const unlockPopup = document.getElementById('unlockPopup');
+    const overlay = document.getElementById('overlay');
+
+    function reportScore(currentScore) {
+        // Logica voor popup bij 18 punten
+        if (currentScore >= 18 && !unlockShown) {
+            showUnlockPopup();
+            unlockShown = true;
+        }
+        
+        window.parent.postMessage({
+            type: 'UPDATE_SCORE',
+            gameFile: window.location.pathname.split('/').pop(),
+            score: currentScore
+        }, '*');
+    }
+
+    function showUnlockPopup() {
+        unlockPopup.style.display = 'block';
+        overlay.style.display = 'block';
+    }
+
+    document.getElementById('closePopup').onclick = () => {
+        unlockPopup.style.display = 'none';
+        overlay.style.display = 'none';
+    };
+
+    function calculateTotalQuestions() { return gameData.reduce((total, text) => total + text.questions.length, 0); }
+
+    function initializeGame() {
+        totalQuestions = calculateTotalQuestions();
+        currentTextIndex = 0; currentQuestionIndex = 0; answeredQuestions = 0;
+        score = 0; skippedQuestions = 0; correctAnswersInRow = 0;
+        updateGameInfo();
+    }
+
+    function updateGameInfo() {
+        const textData = gameData[currentTextIndex];
+        const finalScore = score + skippedQuestions;
+        scoreDisplay.textContent = `Score: ${finalScore}/${totalQuestions}`;
+        currentLevelSpan.textContent = `Level: ${textData.level}`;
+        progressBar.style.width = `${(answeredQuestions / totalQuestions) * 100}%`;
+    }
+
+    function renderText() {
+        const textData = gameData[currentTextIndex];
+        const sentences = textData.text.match(/[^.!?]+[.!?]+/g) || [textData.text];
+        let html = '';
+        sentences.forEach(s => {
+            const ts = s.trim();
+            if (ts) html += `<span class="sentence">${ts}</span> `;
+        });
+        textContainer.innerHTML = html;
+        textContainer.prepend(questionDisplay);
+        document.querySelectorAll('.sentence').forEach(span => span.onclick = handleSentenceClick);
+    }
+
+    function displayQuestion() {
+        questionDisplay.textContent = gameData[currentTextIndex].questions[currentQuestionIndex].q;
+        feedbackDiv.className = ''; feedbackDiv.textContent = '';
+        updateGameInfo();
+    }
+
+    function handleSentenceClick(e) {
+        if (!isGameRunning) return;
+        const clicked = e.target.innerText.trim();
+        const correct = gameData[currentTextIndex].questions[currentQuestionIndex].a.trim();
+        
+        if (clicked === correct) {
+            e.target.classList.add('correct');
+            feedbackDiv.textContent = 'Correct!';
+            feedbackDiv.className = 'feedback feedback-correct';
+            score++; answeredQuestions++; correctAnswersInRow++;
+            reportScore(score + skippedQuestions);
+            setTimeout(nextQuestionOrText, 1000);
+        } else {
+            e.target.classList.add('incorrect');
+            feedbackDiv.textContent = 'Fout. Probeer het opnieuw.';
+            feedbackDiv.className = 'feedback feedback-incorrect';
+            correctAnswersInRow = 0; answeredQuestions++;
+            updateGameInfo();
+            setTimeout(() => e.target.classList.remove('incorrect'), 500);
+        }
+    }
+
+    function nextQuestionOrText() {
+        if (currentQuestionIndex < gameData[currentTextIndex].questions.length - 1) {
+            currentQuestionIndex++;
+            displayQuestion();
+        } else {
+            let nextIndex = currentTextIndex + 1;
+            let skip = 0;
+            if (adaptiveMode && correctAnswersInRow === gameData[currentTextIndex].questions.length) {
+                if (currentTextIndex === 0) { nextIndex = 3; skip = 6; }
+                else if (currentTextIndex === 3) { nextIndex = 6; skip = 6; }
+            }
+            if (skip > 0) {
+                skippedQuestions += skip;
+                answeredQuestions += skip;
+                reportScore(score + skippedQuestions);
+            }
+            currentTextIndex = nextIndex; currentQuestionIndex = 0; correctAnswersInRow = 0;
+            if (currentTextIndex < gameData.length) { renderText(); displayQuestion(); }
+            else endGame();
+        }
+    }
+
+    function startGame(isAdaptive) {
+        isGameRunning = true; adaptiveMode = isAdaptive;
+        initializeGame();
+        startButton.style.display = 'none'; gameInfo.style.display = 'flex';
+        textContainer.style.display = 'block';
+        const msg = document.getElementById('endMessage'); if (msg) msg.remove();
+        renderText(); displayQuestion();
+    }
+
+    function endGame() {
+        isGameRunning = false;
+        textContainer.style.display = 'none'; gameInfo.style.display = 'none';
+        const final = score + skippedQuestions;
+        reportScore(final);
+        const pct = (final / totalQuestions) * 100;
+        const end = document.createElement('div');
+        end.id = 'endMessage';
+        end.innerHTML = `<h3>Spel Voltooid!</h3><p>Score: ${final}/${totalQuestions}</p>
+            <div class="restart-button-group">
+                <button onclick="startGame(true)">Snel Opnieuw</button>
+                <button onclick="startGame(false)">Volledig Opnieuw</button>
+            </div>`;
+        document.getElementById('gameContainer').appendChild(end);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeGame();
+        startButton.onclick = () => startGame(true);
+    });
+</script>
+</body>
+</html>
