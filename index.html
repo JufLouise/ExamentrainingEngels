@@ -62,77 +62,81 @@
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        
-        <div id="card-game1.html" class="game-card bg-white p-6 rounded-2xl shadow-lg border-b-8 border-blue-500 flex flex-col justify-between">
-            <div>
-                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-2xl mb-4">
-                    <i class="fas fa-dove"></i>
+    <main class="max-w-6xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div id="card-game1.html" class="game-card bg-white p-6 rounded-2xl shadow-lg border-b-8 border-blue-500 flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-2xl mb-4">
+                        <i class="fas fa-dove"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-800 mb-2">Conjunction Flappy Bird</h3>
+                    <p class="text-xs text-slate-500 mb-6 leading-relaxed">Oefen verbindingswoorden terwijl je door obstakels vliegt.</p>
                 </div>
-                <h3 class="font-bold text-lg text-slate-800 mb-2">Conjunction Flappy Bird</h3>
-                <p class="text-xs text-slate-500 mb-6 leading-relaxed">Oefen verbindingswoorden terwijl je door obstakels vliegt.</p>
+                <button onclick="openGame('game1.html', 'Conjunction Flappy Bird')" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition-all shadow-md">
+                    Speel Nu
+                </button>
             </div>
-            <button onclick="openGame('game1.html', 'Conjunction Flappy Bird')" 
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition-all shadow-md">
-                Speel Nu
-            </button>
+
+            <div id="card-game2.html" class="game-card bg-white p-6 rounded-2xl shadow-lg border-b-8 border-cyan-500 flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 bg-cyan-100 text-cyan-600 rounded-lg flex items-center justify-center text-2xl mb-4">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-800 mb-2">Sentence Structure</h3>
+                    <p class="text-xs text-slate-500 mb-6 leading-relaxed">Analyseer zinsdelen en sleep ze naar de juiste plek.</p>
+                </div>
+                <button onclick="openGame('game2.html', 'Sentence Structure')" 
+                        class="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 rounded-xl font-bold transition-all shadow-md">
+                    Speel Nu
+                </button>
+            </div>
+
+            <div id="card-game3.html" class="game-card locked bg-white p-6 rounded-2xl shadow-lg border-b-8 border-orange-400 flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center text-2xl mb-4">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-800 mb-2">Reading Skills</h3>
+                    <p id="msg-game3.html" class="text-xs text-red-500 font-semibold mb-6">
+                        <i class="fas fa-lock mr-1"></i> Unlock bij level 10 van Spel 2
+                    </p>
+                </div>
+                <button id="btn-game3.html" disabled onclick="openGame('game3.html', 'English Reading Skills')" 
+                        class="w-full bg-slate-200 text-slate-400 py-3 rounded-xl font-bold cursor-not-allowed transition-all">
+                    Vergrendeld
+                </button>
+            </div>
+
+            <div id="card-game4.html" class="game-card locked bg-white p-6 rounded-2xl shadow-lg border-b-8 border-purple-500 flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center text-2xl mb-4">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-800 mb-2">Signalwords Challenge</h3>
+                    <p id="msg-game4.html" class="text-xs text-red-500 font-semibold mb-6">
+                        <i class="fas fa-lock mr-1"></i> Unlock bij score 18/27 in Spel 3
+                    </p>
+                </div>
+                <button id="btn-game4.html" disabled onclick="openGame('game4.html', 'Signalwords Challenge')" 
+                        class="w-full bg-slate-200 text-slate-400 py-3 rounded-xl font-bold cursor-not-allowed transition-all">
+                    Vergrendeld
+                </button>
+            </div>
         </div>
 
-        <div id="card-game2.html" class="game-card bg-white p-6 rounded-2xl shadow-lg border-b-8 border-cyan-500 flex flex-col justify-between">
-            <div>
-                <div class="w-12 h-12 bg-cyan-100 text-cyan-600 rounded-lg flex items-center justify-center text-2xl mb-4">
-                    <i class="fas fa-layer-group"></i>
+        <div class="flex justify-center items-center">
+            <div class="bg-white p-4 rounded-2xl shadow-md border-2 border-slate-200 flex items-center gap-4">
+                <label for="adminPass" class="text-sm font-bold text-slate-600">Admin Toegang:</label>
+                <div class="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-xl">
+                    <i class="fas fa-key text-slate-400"></i>
+                    <input type="password" id="adminPass" placeholder="Wachtwoord..." 
+                           class="bg-transparent outline-none text-sm font-semibold w-48"
+                           oninput="checkAdminPass()">
                 </div>
-                <h3 class="font-bold text-lg text-slate-800 mb-2">Sentence Structure</h3>
-                <p class="text-xs text-slate-500 mb-6 leading-relaxed">Analyseer zinsdelen en sleep ze naar de juiste plek.</p>
             </div>
-            <button onclick="openGame('game2.html', 'Sentence Structure')" 
-                    class="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 rounded-xl font-bold transition-all shadow-md">
-                Speel Nu
-            </button>
-        </div>
-
-        <div id="card-game3.html" class="game-card locked bg-white p-6 rounded-2xl shadow-lg border-b-8 border-orange-400 flex flex-col justify-between">
-            <div>
-                <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center text-2xl mb-4">
-                    <i class="fas fa-book-open"></i>
-                </div>
-                <h3 class="font-bold text-lg text-slate-800 mb-2">Reading Skills</h3>
-                <p id="msg-game3.html" class="text-xs text-red-500 font-semibold mb-6">
-                    <i class="fas fa-lock mr-1"></i> Unlock bij level 10 van Spel 2
-                </p>
-            </div>
-            <button id="btn-game3.html" disabled onclick="openGame('game3.html', 'English Reading Skills')" 
-                    class="w-full bg-slate-200 text-slate-400 py-3 rounded-xl font-bold cursor-not-allowed transition-all">
-                Vergrendeld
-            </button>
-        </div>
-
-        <div id="card-game4.html" class="game-card locked bg-white p-6 rounded-2xl shadow-lg border-b-8 border-purple-500 flex flex-col justify-between">
-            <div>
-                <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center text-2xl mb-4">
-                    <i class="fas fa-bolt"></i>
-                </div>
-                <h3 class="font-bold text-lg text-slate-800 mb-2">Signalwords Challenge</h3>
-                <p id="msg-game4.html" class="text-xs text-red-500 font-semibold mb-6">
-                    <i class="fas fa-lock mr-1"></i> Unlock bij score 18/27 in Spel 3
-                </p>
-            </div>
-            <button id="btn-game4.html" disabled onclick="openGame('game4.html', 'Signalwords Challenge')" 
-                    class="w-full bg-slate-200 text-slate-400 py-3 rounded-xl font-bold cursor-not-allowed transition-all">
-                Vergrendeld
-            </button>
         </div>
     </main>
-
-    <footer class="max-w-6xl mx-auto mt-12 p-6 flex justify-center">
-        <div class="bg-white/50 p-4 rounded-2xl flex items-center gap-3 border border-slate-200 shadow-sm">
-            <i class="fas fa-key text-slate-400"></i>
-            <input type="password" id="adminPass" placeholder="Admin wachtwoord..." 
-                   class="bg-transparent outline-none text-xs w-40"
-                   oninput="checkAdminPass()">
-        </div>
-    </footer>
 
     <div id="gameModal" class="modal flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-5xl rounded-2xl overflow-hidden shadow-2xl animate-pop">
@@ -145,13 +149,11 @@
                     Afsluiten <i class="fas fa-times ml-1"></i>
                 </button>
             </div>
-            <div id="iframeContainer" class="bg-slate-800">
-                </div>
+            <div id="iframeContainer" class="bg-slate-800"></div>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATIE ---
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySEVQMWJHmg4jZV6RyA3TVohEo6n2OdNvCaJP_NeE9IDIaWaUczEAqR-V6VDc01kiy-g/exec';
         const ADMIN_PASSWORD = 'IkBenMartijnKoops';
 
@@ -159,14 +161,12 @@
             'game1.html': 0, 'game2.html': 0, 'game3.html': 0, 'game4.html': 0
         };
 
-        // Naam laden
         document.getElementById('playerName').value = localStorage.getItem('player_name') || '';
 
         function saveName() {
             localStorage.setItem('player_name', document.getElementById('playerName').value);
         }
 
-        // --- GAME LOGICA ---
         function updateUI() {
             const isAdmin = localStorage.getItem('admin_unlocked') === 'true';
 
@@ -203,7 +203,8 @@
             if (input === ADMIN_PASSWORD) {
                 localStorage.setItem('admin_unlocked', 'true');
                 updateUI();
-                alert('Alle spellen zijn nu ontgrendeld!');
+                alert('Admin Mode geactiveerd! Alle spellen zijn ontgrendeld.');
+                document.getElementById('adminPass').value = ''; // Veld leegmaken
             }
         }
 
@@ -223,33 +224,12 @@
             updateUI();
         }
 
-        // --- DATA VERZENDEN ---
-        async function sendToGoogle(gameFile, score) {
-            const name = localStorage.getItem('player_name');
-            const payload = { naam: name, game: gameFile, score: score };
-
-            try {
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    cache: 'no-cache',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            } catch (e) {
-                console.log("Sheet update error:", e);
-            }
-        }
-
-        // Luisteren naar scores vanuit de Iframes
         window.addEventListener('message', function(event) {
             if (event.data.type === 'UPDATE_SCORE') {
                 const { gameFile, score } = event.data;
-                
                 if (score > progress[gameFile]) {
                     progress[gameFile] = score;
                     localStorage.setItem('edu_games_progress', JSON.stringify(progress));
-                    sendToGoogle(gameFile, score);
                     updateUI();
                 }
             }
@@ -263,7 +243,6 @@
             }
         }
 
-        // Start Up
         updateUI();
     </script>
 </body>
