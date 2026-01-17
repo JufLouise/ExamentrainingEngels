@@ -1,348 +1,740 @@
-<!DOCTYPE html>
-<html lang="nl">
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Engels Zinsanalyse Game</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
-            color: #1f2937; /* donkergrijs */
-        }
-        
-        /* Drag and Drop Styling */
-        .chunk {
-            transition: all 0.2s;
-        }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Conjunctions Flap — English conjunctions game</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=Poppins:wght@600&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --color-sky-light: #e0f7fa;
+        --color-sky-dark: #b2ebf2;
+        --color-primary: #00bcd4;
+        --color-secondary: #ff9800;
+        --color-text: #1a237e;
+        --color-text-alt: #455a64;
+        --color-card: #ffffff;
+        --color-bird: var(--color-secondary);
+        --color-correct: #4caf50;
+        --color-wrong: #f44336;
+    }
 
-        .question-draggable {
-            transition: all 0.2s;
-            cursor: grab;
-            user-select: none;
-        }
+    html, body {
+        height: 100%;
+        margin: 0;
+        font-family: 'Inter', Arial, sans-serif;
+        background: linear-gradient(to bottom, var(--color-sky-light) 0%, var(--color-sky-dark) 100%);
+        color: var(--color-text);
+        overflow-x: hidden;
+    }
 
-        .chunk.drop-target {
-            background-color: #e0f7fa; /* lichtblauw */
-            border-color: #00bcd4;
-            box-shadow: 0 0 10px rgba(0, 188, 212, 0.5);
-            transform: scale(1.02);
-        }
+    .container {
+        max-width: 960px; /* Breder gemaakt */
+        margin: 30px auto;
+        padding: 0 15px;
+    }
 
-        .chunk.correct {
-            background-color: #e6ffed !important;
-            border-color: #10b981 !important; /* emerald green */
-            color: #065f46;
-            animation: pop 0.3s ease-in-out;
-        }
+    h1 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 28px;
+        text-align: center;
+        margin: 0 0 15px;
+        color: var(--color-text);
+        text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+    }
 
-        .chunk.incorrect {
-            background-color: #fee2e2 !important;
-            border-color: #ef4444 !important; /* red */
-            color: #991b1b;
-            animation: shake 0.4s ease-in-out;
-        }
+    #gameArea {
+        background: linear-gradient(to bottom, #f0f8ff, #dcf0ff);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15), inset 0 -4px 0 rgba(0, 0, 0, 0.1);
+        position: relative;
+    }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25%, 75% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-        }
+    canvas {
+        display: block;
+        background: transparent;
+        border-radius: 12px;
+        width: 100%;
+        height: 400px; /* Hoogte blijft gelijk */
+        touch-action: none;
+        border: 2px solid var(--color-primary);
+        outline: none;
+    }
 
-        @keyframes pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-    </style>
+    /* HUD */
+    .hud {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 0 0 15px;
+    }
+
+    .box {
+        background: var(--color-card);
+        padding: 10px 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        font-weight: 800;
+        color: var(--color-text);
+        font-size: 16px;
+        border-bottom: 3px solid var(--color-primary);
+    }
+    .box span { color: var(--color-primary); }
+
+    /* Sentence Area */
+    .instructions {
+        font-size: 16px;
+        margin: 0 0 15px;
+        padding: 15px;
+        background: #fff;
+        border-radius: 10px;
+        line-height: 1.5;
+        border: 1px solid #ddd;
+        text-align: center;
+        min-height: 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .sentence {
+        font-weight: 800;
+        font-size: 20px;
+        color: var(--color-text);
+        margin-bottom: 5px;
+    }
+
+    .small {
+        font-size: 14px;
+        color: var(--color-text-alt);
+    }
+
+    /* Controls */
+    .controls {
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+    }
+
+    button, select {
+        padding: 10px 18px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+    }
+
+    button#startBtn {
+        background: linear-gradient(to bottom, #00e5ff, #00b8d4);
+        color: white;
+        box-shadow: 0 4px 0 #0097a7;
+    }
+    button#startBtn:active { transform: translateY(2px); box-shadow: 0 2px 0 #0097a7; }
+
+    button.secondary {
+        background: linear-gradient(to bottom, #90a4ae, #78909c);
+        color: white;
+        box-shadow: 0 4px 0 #546e7a;
+    }
+    button.secondary:active { transform: translateY(2px); box-shadow: 0 2px 0 #546e7a; }
+
+    /* Submit Modal Overlay */
+    #submitOverlay {
+        display: none;
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.7);
+        border-radius: 20px;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+    }
+    .modal-content {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        text-align: center;
+        width: 300px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+    .modal-content h2 { margin-top: 0; color: var(--color-text); }
+    .modal-content input {
+        width: 80%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+    button.submit-btn {
+        background: var(--color-correct);
+        color: white;
+        width: 100%;
+        margin-top: 10px;
+        box-shadow: 0 4px 0 #2e7d32;
+    }
+    button.close-btn {
+        background: transparent;
+        color: #888;
+        margin-top: 10px;
+        box-shadow: none;
+        font-weight: normal;
+        text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+        .container { margin: 15px auto; }
+        h1 { font-size: 24px; }
+        canvas { height: 350px; }
+    }
+</style>
 </head>
-<body class="min-h-screen p-4 md:p-8">
-
-    <header class="bg-white shadow-xl p-4 md:p-6 rounded-xl mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div class="flex items-center gap-4">
-            <div class="bg-blue-600 text-white p-3 rounded-xl text-3xl">
-                <i class="fas fa-puzzle-piece"></i>
-            </div>
-            <div>
-                <h1 class="font-bold text-2xl leading-tight text-slate-800">Zinsanalyse Game</h1>
-                <p class="text-sm text-slate-500">Sleep de vraagwoorden naar het juiste zinsdeel</p>
-            </div>
-        </div>
-        
-        <div class="flex flex-row md:flex-col items-center md:items-end gap-4 md:gap-1 p-2 bg-slate-50 rounded-lg">
-            <div class="flex items-center gap-4">
-                <span class="text-sm text-slate-500">Level Voltooid</span>
-                <span id="score" class="font-bold text-xl text-blue-600">0</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <span class="text-sm text-slate-500">Voortgang</span>
-                <span id="percentage" class="font-bold text-xl text-green-600">0%</span>
-            </div>
-        </div>
-    </header>
-
-    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg shadow-md mb-6">
-        <p class="text-sm">
-            <strong>Instructie:</strong> Analyseer de Engelse zin. Sleep de vraagwoorden van onderaf naar het bijbehorende zinsdeel. Levels A2 t/m B1 (Levels 1 t/m 10) zijn verplicht.
-        </p>
-    </div>
-
-    <div class="flex gap-4 mb-6 justify-center">
-        <button id="prev-level" class="bg-gray-300 hover:bg-gray-400 text-slate-800 font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
-            <i class="fas fa-arrow-left"></i> Vorige level
-        </button>
-        <button id="reset-btn" class="bg-yellow-400 hover:bg-yellow-500 text-slate-800 font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
-            <i class="fas fa-undo"></i> Reset level
-        </button>
-        <button id="next-level" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
-            Volgende level <i class="fas fa-arrow-right"></i>
-        </button>
-    </div>
-    
-    <div id="game-area" class="bg-white p-6 rounded-xl shadow-2xl">
-        <div id="sentence-container" class="flex flex-wrap gap-4 mb-8 justify-center">
+<body>
+    <div class="container">
+        <h1>🐦 Conjunctions Flap</h1>
+        <div id="gameArea">
+            <div class="hud">
+                <div class="box">Score: <span id="score">0</span></div>
+                <div class="box">Level: <span id="level">1</span>/<span id="maxlevel">30</span></div>
+                <div class="box">Lives: <span id="lives">3</span></div>
+                <div class="box">Total Deaths: <span id="deathCount">0</span></div>
             </div>
 
-        <h3 class="text-xl font-semibold mb-4 text-center border-t pt-4 border-slate-200">Beschikbare Vragen:</h3>
-        <div id="questions-container" class="flex flex-wrap gap-3 justify-center bg-slate-100 p-4 rounded-lg shadow-inner">
+            <div class="instructions">
+                <div class="sentence" id="sentenceDisplay">Welcome! Press Start to play.</div>
+                <div class="small" id="instrSub">Press <strong>Spacebar</strong> to flap. Hit the correct word!</div>
             </div>
-    </div>
 
-    <div id="end-message" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white p-8 rounded-xl shadow-2xl text-center max-w-sm w-full animate-pop">
-            <i class="fas fa-medal text-yellow-500 text-5xl mb-4"></i>
-            <h4 class="text-2xl font-bold mb-3 text-slate-800">Gefeliciteerd!</h4>
-            <p class="text-slate-600 mb-6">Je hebt alle levels voltooid en bent een echte Zinsanalyse Master.</p>
-            <button onclick="location.reload()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-lg">
-                Opnieuw Spelen
-            </button>
-        </div>
-    </div>
+            <canvas id="c" width="900" height="400" tabindex="0"></canvas>
 
-
-    <script>
-        // Functie voor het rapporteren van de score aan het parent window
-        function reportScore(currentScore) {
-            window.parent.postMessage({
-                type: 'UPDATE_SCORE',
-                gameFile: window.location.pathname.split('/').pop(),
-                score: currentScore
-            }, '*');
-        }
-
-        const levels = [
-            // Level 1 (A2)
-            { text: "The curious young boy / wandered / through the old forest.", answers: {"Who?":0,"What?":1,"Where?":2,"When?":null}, level: "A2" },
-            // Level 2 (A2)
-            { text: "Yesterday morning / the busy chef / prepared breakfast / in the small kitchen.", answers: {"Who?":1,"What?":2,"Where?":3,"When?":0}, level: "A2" },
-            // Level 3 (A2)
-            { text: "The friendly teacher / explained the lesson / to the students.", answers: {"Who?":0,"What?":1,"To whom?":2,"Where?":null,"When?":null}, level: "A2" },
-            // Level 4 (A2)
-            { text: "During the long meeting / the project manager / presented a detailed report / to the board members.", answers: {"When?":0,"Who?":1,"What?":2,"To whom?":3,"Where?":null}, level: "B1" },
-            // Level 5 (B1)
-            { text: "The young volunteers / delivered food packages / to elderly residents / in the quiet neighborhood.", answers: {"Who?":0,"What?":1,"To whom?":2,"Where?":3,"When":null}, level: "B1" },
-            // Level 6 (B1)
-            { text: "Early this afternoon / the researcher / demonstrated the new device / in the science lab.", answers: {"When?":0,"Who?":1,"What?":2,"Where?":3}, level: "B1" },
-            // Level 7 (B1)
-            { text: "The journalist / asked several questions / to the mayor / after the conference.", answers: {"Who?":0,"What?":1,"To whom?":2,"When?":3,"Where?":null}, level: "B1" },
-            // Level 8 (B1)
-            { text: "Last Friday / the football coach / gave extra training / to the younger players / on the field.", answers: {"When?":0,"Who?":1,"What?":2,"To whom?":3,"Where?":4}, level: "B1" },
-            // Level 9 (B1)
-            { text: "The librarian / recommended a fascinating book / to the new student / in the reading room.", answers: {"Who?":0,"What?":1,"To whom?":2,"Where?":3,"When?":null}, level: "B1" },
-            // Level 10 (B1) - Verplicht einde
-            { text: "Later that evening / the group of friends / planned their holiday / at Emma’s house.", answers: {"When?":0,"Who?":1,"What?":2,"Where?":3}, level: "B1" },
-            
-            // Level 11 (B2) - Optioneel
-            { text: "The biology teacher / showed a live experiment / to the curious class / during the lesson.", answers: {"Who?":0,"What?":1,"To whom?":2,"When?":3,"Where?":null}, level: "B2" },
-            // Level 12 (B2) - Optioneel
-            { text: "At the end of the week / the company director / announced important changes / to all employees.", answers: {"When?":0,"Who?":1,"What?":2,"To whom?":3,"Where?":null}, level: "B2" }
-        ];
-
-        const compulsoryEndIndex = 9; // Level 10 is index 9 (0-based)
-
-        let currentLevel = 0;
-        let score = 0;
-        let isCompulsoryFinished = false;
-
-        const sentenceContainer = document.getElementById("sentence-container");
-        const questionsContainer = document.getElementById("questions-container");
-        const endMessage = document.getElementById("end-message");
-
-        function updateScoreboard() {
-            document.getElementById("score").textContent = score;
-            
-            // Rapporteer de nieuwe score
-            reportScore(score);
-
-            const baseLevels = compulsoryEndIndex + 1;
-            let percentageValue = 0;
-
-            if (score <= baseLevels) {
-                percentageValue = Math.round((score / baseLevels) * 100);
-            } else {
-                percentageValue = Math.round((score / levels.length) * 100);
-            }
-            
-            document.getElementById("percentage").textContent = `${percentageValue}%`;
-        }
-
-        function loadLevel(levelIndex) {
-            currentLevel = levelIndex;
-            const level = levels[currentLevel];
-            const paragraph = level.text;
-            const answers = level.answers;
-            
-            const totalQuestions = Object.keys(answers).filter(q => answers[q] !== null).length;
-            let correctCount = 0;
-
-            sentenceContainer.innerHTML = "";
-            questionsContainer.innerHTML = "";
-
-            const chunks = paragraph.split("/").map(c => c.trim()).filter(c => c.length > 0);
-            
-            chunks.forEach((chunk, index) => {
-                const div = document.createElement("div");
-                div.className = "chunk bg-white p-4 rounded-xl border-2 border-slate-200 shadow-md min-w-[120px] text-center font-semibold text-base flex flex-col justify-center items-center relative";
-                div.textContent = chunk;
-                div.dataset.index = index;
-
-                if (index === 0) {
-                    const levelSpan = document.createElement('span');
-                    levelSpan.className = 'absolute top-[-10px] left-2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full shadow-sm';
-                    levelSpan.textContent = `Level ${currentLevel + 1} (${level.level})`;
-                    div.appendChild(levelSpan);
-                }
-
-                div.addEventListener("dragover", e => { e.preventDefault(); div.classList.add("drop-target"); });
-                div.addEventListener("dragleave", () => div.classList.remove("drop-target"));
-                div.addEventListener("drop", e => {
-                    e.preventDefault();
-                    div.classList.remove("drop-target");
-                    const questionName = e.dataTransfer.getData("text/plain");
-                    checkAnswer(questionName, index, div, answers);
-                });
-
-                sentenceContainer.appendChild(div);
-            });
-
-            ["Who?", "What?", "When?", "Where?", "To whom?"]
-                .filter(q => q in answers)
-                .forEach(q => {
-                    if (answers[q] !== null && answers[q] !== undefined) {
-                        const qDiv = document.createElement("div");
-                        qDiv.className = "question-draggable bg-blue-600 text-white py-2 px-4 rounded-full font-medium shadow-md hover:bg-blue-700";
-                        qDiv.textContent = q;
-                        qDiv.draggable = true;
-                        qDiv.addEventListener("dragstart", e => e.dataTransfer.setData("text/plain", q));
-                        questionsContainer.appendChild(qDiv);
-                    }
-                });
-
-            function checkAnswer(question, dropIndex, dropDiv, answers) {
-                if (dropDiv.querySelector('.placed-question')) {
-                    dropDiv.classList.add("incorrect");
-                    setTimeout(() => dropDiv.classList.remove("incorrect"), 800);
-                    return;
-                }
-
-                const correctIndex = answers[question];
-                if (dropIndex == correctIndex) {
-                    dropDiv.classList.add("correct");
-                    
-                    const qs = Array.from(document.querySelectorAll('.question-draggable'));
-                    const matched = qs.find(el => el.textContent === question);
-                    if (matched) {
-                        matched.remove();
-
-                        const placedQ = document.createElement('span');
-                        placedQ.textContent = question;
-                        placedQ.className = "placed-question block mt-2 text-xs font-bold px-2 py-0.5 rounded-full bg-green-500 text-white";
-                        dropDiv.appendChild(placedQ);
-                    }
-
-                    correctCount++;
-
-                    if (correctCount === totalQuestions) {
-                        score++;
-                        updateScoreboard();
-
-                        if (currentLevel === compulsoryEndIndex && !isCompulsoryFinished) {
-                            isCompulsoryFinished = true;
-                            showCustomAlert('Hoofduitdaging voltooid!', 'Je hebt alle verplichte A2-B1 levels gehaald! Ga door naar de B2-levels voor de complete score, of sluit nu af.', true);
-                        } else if (currentLevel < levels.length - 1) {
-                            setTimeout(() => {
-                                loadLevel(currentLevel + 1);
-                            }, 800);
-                        } else {
-                            showCustomAlert('Gefeliciteerd!', 'Je hebt alle levels voltooid en bent een echte Zinsanalyse Master.', false);
-                        }
-                    }
-                } else {
-                    dropDiv.classList.add("incorrect");
-                    setTimeout(() => dropDiv.classList.remove("incorrect"), 800);
-                }
-            }
-        }
-
-        function showCustomAlert(title, message, isOptionalPrompt) {
-            endMessage.classList.remove('hidden');
-            const content = endMessage.querySelector('div');
-            
-            content.innerHTML = `
-                <i class="fas ${isOptionalPrompt ? 'fa-star text-yellow-500' : 'fa-medal text-blue-500'} text-5xl mb-4 animate-pop"></i>
-                <h4 class="text-2xl font-bold mb-3 text-slate-800">${title}</h4>
-                <p class="text-slate-600 mb-6">${message}</p>
-                <div class="flex flex-col gap-2">
-                    ${isOptionalPrompt ? 
-                        `<button onclick="startOptionalNextLevel()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-lg">
-                            Ga naar B2 Uitdaging <i class="fas fa-arrow-right ml-2"></i>
-                        </button>
-                        <button onclick="hideCustomAlert();" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-5 rounded-lg">
-                            Sluit af
-                        </button>`
-                        :
-                        `<button onclick="location.reload()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-lg">
-                            Opnieuw Spelen
-                        </button>`
-                    }
+            <div id="submitOverlay">
+                <div class="modal-content">
+                    <h2 id="modalTitle">Good Job!</h2>
+                    <p>Enter your name to save your score.</p>
+                    <input type="text" id="playerName" placeholder="Your Name">
+                    <button class="submit-btn" id="sendDataBtn">Submit Score</button>
+                    <button class="close-btn" id="closeModalBtn">No thanks, continue playing</button>
+                    <p id="statusMsg" style="font-size:12px; margin-top:5px; color:#666;"></p>
                 </div>
-            `;
-        }
+            </div>
 
-        function hideCustomAlert() {
-            endMessage.classList.add('hidden');
-        }
+            <div class="controls">
+                <button id="startBtn">▶️ Start Game</button>
+                <button id="restartBtn" class="secondary">🔄 Reset</button>
+                <select id="speedSelect" class="small">
+                    <option value="2">Slow</option>
+                    <option value="3.5" selected>Medium</option>
+                    <option value="5">Fast</option>
+                </select>
+            </div>
+            
+            <footer style="margin-top:10px; font-size:12px; color:#666; text-align:center;">
+                Audience: lower secondary (year 3–4).
+            </footer>
+        </div>
+    </div>
 
-        function startOptionalNextLevel() {
-            hideCustomAlert();
-            loadLevel(currentLevel + 1);
-        }
+<script>
+// --- CONFIGURATIE ---
+// PLAK HIERONDER JE GOOGLE SCRIPT URL TUSSEN DE AANHALINGSTEKENS
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwSoUKOv6FrSs8hWa8JaKbaW903H5kJLgWf37V-AU8QL-c53xk3ylocGiKEIt1Pa3xGDg/exec"; 
+// --------------------
 
-        document.getElementById('prev-level').addEventListener('click', () => {
-            if (currentLevel > 0) {
-                loadLevel(currentLevel - 1);
+const fullLevels = [
+ { sentence: "I went home ___ I didn't feel well.", answer: "because", choices:["because","and","but"] },
+ { sentence: "Would you like coffee ___ tea?", answer: "or", choices:["or","and","but"] },
+ { sentence: "She wanted to come, ___ it was raining.", answer: "but", choices:["so","but","and"] },
+ { sentence: "I study hard ___ I want to pass my exams.", answer: "because", choices:["because","if","and"] },
+ { sentence: "We will walk ___ it isn't far.", answer: "because", choices:["but","because","or"] },
+ { sentence: "She kept smiling ___ she was sad.", answer: "although", choices:["although","and","unless"] },
+ { sentence: "Put on your coat ___ it gets cold.", answer: "if", choices:["before","if","because"] },
+ { sentence: "He didn't sleep ___ he wanted to watch the movie.", answer: "because", choices:["because","or","so"] },
+ { sentence: "Do your homework first, ___ you may play later.", answer: "then", choices:["then","but","unless"] },
+ { sentence: "I won't come ___ I am sick.", answer: "because", choices:["because","so","like"] },
+ { sentence: "You can choose milk ___ water.", answer: "or", choices:["and","or","because"] },
+ { sentence: "She ran fast, ___ she still missed the bus.", answer: "but", choices:["but","because","so"] },
+ { sentence: "Stay inside ___ it is dangerous outside.", answer: "because", choices:["because","and","or"] },
+ { sentence: "She reads a lot ___ she has time.", answer: "when", choices:["if","when","so"] },
+ { sentence: "He eats vegetables ___ he wants to stay healthy.", answer: "because", choices:["because","and","but"] },
+ { sentence: "Come with us ___ you want to.", answer: "if", choices:["if","because","but"] },
+ { sentence: "She practiced a lot ___ she improved her skills.", answer: "so that", choices:["so that","because","and"] },
+ { sentence: "I will call you ___ I get home.", answer: "when", choices:["when","before","and"] },
+ { sentence: "Work carefully ___ you make mistakes.", answer: "or", choices:["or","because","and"] },
+ { sentence: "We wait ___ the train arrives.", answer: "until", choices:["until","like","unless"] },
+ { sentence: "She kept practicing ___ she failed the first time.", answer: "although", choices:["although","because","and"] },
+ { sentence: "You may join ___ you ask for permission.", answer: "if", choices:["if","because","so"] },
+ { sentence: "Take an umbrella ___ it rains.", answer: "if", choices:["if","so that","and"] },
+ { sentence: "He studied hard ___ he didn't sleep much.", answer: "and", choices:["and","or","but"] },
+ { sentence: "She sings loudly ___ she is happy.", answer: "because", choices:["because","and","or"] },
+ { sentence: "You must do what is right ___ you are responsible.", answer: "because", choices:["because","unless","or"] },
+ { sentence: "We leave now ___ we are late for the bus.", answer: "because", choices:["because","and","or"] },
+ { sentence: "I take my book ___ I want to read on the train.", answer: "because", choices:["because","and","or"] },
+ { sentence: "She worked hard ___ she was rewarded for her effort.", answer: "so that", choices:["unless","after","so that"] },
+ { sentence: "He stayed calm ___ he was angry inside.", answer: "although", choices:["although","so","and"] }
+];
+
+// Game Canvas Variables
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = canvas.width; 
+const H = canvas.height;
+
+// DOM Elements
+const scoreEl = document.getElementById('score');
+const levelEl = document.getElementById('level');
+const maxLevelEl = document.getElementById('maxlevel');
+const livesEl = document.getElementById('lives');
+const deathCountEl = document.getElementById('deathCount');
+const sentenceEl = document.getElementById('sentenceDisplay');
+const instrSub = document.getElementById('instrSub');
+const startBtn = document.getElementById('startBtn');
+const restartBtn = document.getElementById('restartBtn');
+const speedSelect = document.getElementById('speedSelect');
+
+// Modal Elements
+const submitOverlay = document.getElementById('submitOverlay');
+const playerNameInp = document.getElementById('playerName');
+const sendDataBtn = document.getElementById('sendDataBtn');
+const closeModalBtn = document.getElementById('closeModalBtn');
+const statusMsg = document.getElementById('statusMsg');
+
+maxLevelEl.textContent = fullLevels.length;
+
+// Game State
+let bird = { x:140, y:H/2, r:16, vy:0 };
+let gravity = 0.45; // Iets verlaagd voor betere speelbaarheid
+let flapPower = -7; 
+let obstacles = []; 
+let score = 0;
+let lives = 3;
+let currentLevel = 0;
+let baseSpeed = 3.5;
+let speed = baseSpeed;
+let totalSessionDeaths = 0; 
+let hasSubmitted = false; 
+
+// States: 'menu', 'playing', 'respawn', 'gameover', 'victory', 'paused'
+let gameState = 'menu'; 
+let correctHitProcessed = false; 
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a }
+
+function initGame(){
+    score = 0; 
+    lives = 3; 
+    currentLevel = 0; 
+    bird.y = H/2; bird.vy = 0; 
+    obstacles = []; 
+    gameState = 'menu'; 
+    correctHitProcessed = false; 
+    hasSubmitted = false;
+    
+    shuffle(fullLevels); 
+    baseSpeed = parseFloat(speedSelect.value);
+    speed = baseSpeed;
+    
+    updateHUD(); 
+    draw();
+    sentenceEl.textContent = "Press Start or Space to begin!";
+}
+
+function startGame(){
+    if(gameState === 'playing') return;
+    
+    gameState = 'playing';
+    // FIX: Direct een sprongetje zodat je niet meteen valt
+    bird.vy = flapPower; 
+
+    loadSentence();
+    canvas.focus();
+    updateHUD();
+    loop();
+}
+
+function updateHUD(){ 
+    scoreEl.textContent = score; 
+    livesEl.textContent = lives; 
+    levelEl.textContent = currentLevel+1;
+    deathCountEl.textContent = totalSessionDeaths;
+}
+
+function loadSentence(){ 
+    const lvl = fullLevels[currentLevel]; 
+    if(!lvl) return;
+    sentenceEl.textContent = lvl.sentence.replace(lvl.answer, '_____'); 
+    instrSub.innerHTML = `Speed: <strong>${speed.toFixed(1)}</strong>`;
+}
+
+function spawnChoices(levelIndex){ 
+    const lvl = fullLevels[levelIndex]; 
+    if(!lvl) return [];
+    
+    let choices = lvl.choices.slice(); 
+    if(!choices.includes(lvl.answer)) choices[0] = lvl.answer; 
+
+    choices = shuffle(choices); 
+    const gap = Math.floor(H / (choices.length + 1)); 
+    
+    const list = choices.map((text,i)=>({
+        text: text,
+        x: W + 100, 
+        y: gap*(i+1),
+        w:160,
+        h:56,
+        correct: text.toLowerCase() === lvl.answer.toLowerCase(),
+        hit: false
+    }));
+    return list;
+}
+
+function spawner(){
+    if(gameState !== 'playing') return;
+    if(obstacles.length === 0 && !correctHitProcessed){
+        obstacles = spawnChoices(currentLevel);
+    }
+}
+
+function update(){ 
+  // BELANGRIJK: Physics stopt als de status niet 'playing' is.
+  if(gameState !== 'playing') return;
+  
+  // Bird physics
+  bird.vy += gravity; 
+  bird.y += bird.vy;
+  
+  if(bird.y + bird.r > H){ bird.y = H - bird.r; bird.vy = 0; handleDeath(); }
+  if(bird.y - bird.r < 0){ bird.y = bird.r; bird.vy = 0; }
+
+  spawner();
+
+  if(!correctHitProcessed){
+    for(let ob of obstacles){ ob.x -= speed; }
+  } else {
+    for(let ob of obstacles){ ob.x -= speed * 2; }
+    if(obstacles.length > 0 && obstacles.every(o => o.x + o.w < 0)){
+      nextLevel(); 
+      return;
+    }
+  }
+
+  for(let ob of obstacles){ 
+    if(correctHitProcessed || ob.hit) continue; 
+    
+    let testX = bird.x;
+    let testY = bird.y;
+    if (bird.x < ob.x) testX = ob.x;
+    else if (bird.x > ob.x + ob.w) testX = ob.x + ob.w;
+    if (bird.y < ob.y - ob.h/2) testY = ob.y - ob.h/2;
+    else if (bird.y > ob.y + ob.h/2) testY = ob.y + ob.h/2;
+
+    let distX = bird.x - testX;
+    let distY = bird.y - testY;
+    let distance = Math.sqrt(distX*distX + distY*distY);
+
+    if (distance <= bird.r) {
+        ob.hit = true;
+        if(ob.correct){ 
+            score += 10; 
+            showFeedback(true); 
+            correctHitProcessed = true; 
+            updateHUD(); 
+            return; 
+        } else { 
+            score = Math.max(0, score-2); 
+            updateHUD(); 
+            showFeedback(false); 
+            handleDeath(); 
+            return; 
+        }
+    }
+  }
+
+  if(!correctHitProcessed) {
+      if(obstacles.length > 0 && obstacles.every(o => o.x + o.w < 0)) {
+          obstacles = []; 
+      }
+  }
+}
+
+function handleDeath(){
+    lives--;
+    totalSessionDeaths++;
+    updateHUD();
+    
+    // Check submit condition on death
+    if(checkSubmitCondition()) return; // Als popup opent, stop functie hier
+
+    if(lives <= 0){
+        gameState = 'gameover';
+    } else {
+        // FIX: Zet status op 'respawn' in plaats van doorgaan
+        gameState = 'respawn';
+        bird.y = H/2; 
+        bird.vy = 0; 
+        obstacles = []; 
+        correctHitProcessed = false;
+    }
+}
+
+function checkSubmitCondition(){
+    if(!hasSubmitted && (currentLevel >= 9 || totalSessionDeaths >= 5)){
+        openSubmitModal();
+        return true;
+    }
+    return false;
+}
+
+function openSubmitModal(){
+    gameState = 'paused'; // BEVRIES HET SPEL
+    submitOverlay.style.display = 'flex';
+    document.getElementById('modalTitle').textContent = (currentLevel >= 9) ? "Awesome Progress!" : "Keep Trying!";
+}
+
+function nextLevel(){ 
+  currentLevel++; 
+  speed = Math.min(speed + 0.15, 7.0); 
+
+  if(checkSubmitCondition()) return;
+
+  if(currentLevel >= fullLevels.length){ 
+    gameState = 'victory'; 
+    score += 50; 
+    updateHUD();
+    return; 
+  } 
+  
+  obstacles = []; 
+  bird.y = H/2; 
+  bird.vy = 0; 
+  correctHitProcessed = false; 
+  loadSentence(); 
+  updateHUD(); 
+}
+
+function showFeedback(ok){ 
+  const color = ok ? 'rgba(76, 175, 80, 0.3)' : 'rgba(244, 67, 54, 0.3)';
+  const orig = sentenceEl.style.backgroundColor; 
+  sentenceEl.style.backgroundColor = color; 
+  setTimeout(()=>{ sentenceEl.style.backgroundColor = 'transparent'; }, 450);
+}
+
+// DRAWING
+function draw(){ 
+  ctx.clearRect(0,0,W,H);
+  
+  // Sky
+  const g = ctx.createLinearGradient(0,0,0,H); 
+  g.addColorStop(0, '#b2ebf2'); 
+  g.addColorStop(1, '#e0f7fa'); 
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
+  // Obstacles
+  for(let ob of obstacles){ 
+    let top = ob.y - ob.h/2; 
+    let fillColor = '#fff'; 
+    let strokeColor = '#b0bec5'; 
+    let textColor = '#1a237e';
+
+    if(ob.hit) {
+      if(ob.correct) { fillColor = '#e8f5e9'; strokeColor = '#4caf50'; } 
+      else { fillColor = '#ffebee'; strokeColor = '#f44336'; }
+    } 
+    
+    if(correctHitProcessed && !ob.correct) {
+      fillColor = 'rgba(255,255,255,0.5)'; textColor = 'rgba(26,35,126,0.5)';
+    }
+
+    ctx.beginPath();
+    ctx.roundRect(ob.x, top, ob.w, ob.h, 10);
+    ctx.fillStyle = fillColor; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = strokeColor; ctx.stroke();
+    
+    ctx.fillStyle = textColor; 
+    ctx.font = '700 18px Inter, Arial'; 
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; 
+    ctx.fillText(ob.text, ob.x + ob.w/2, ob.y);
+  }
+
+  // Bird
+  if(gameState !== 'menu'){
+      drawBird(bird.x, bird.y);
+  }
+
+  // Overlays
+  if(gameState === 'menu'){
+      drawOverlay("Ready?", "Press SPACE to fly!");
+  } else if (gameState === 'gameover'){
+      drawOverlay("Game Over", "Press SPACE to try again");
+  } else if (gameState === 'victory'){
+      drawOverlay("VICTORY!", "You finished all levels! Score: " + score);
+  } else if (gameState === 'respawn'){
+      // Nieuwe overlay voor tussen de levens door
+      drawOverlay("Ouch!", "Press SPACE to continue");
+  } else if (gameState === 'paused'){
+      drawOverlay("Paused", "Enter your name...");
+  }
+}
+
+function drawBird(x,y){
+    ctx.beginPath(); ctx.arc(x, y, 16, 0, Math.PI*2); 
+    ctx.fillStyle = '#ff9800'; ctx.fill(); 
+    ctx.lineWidth = 2; ctx.strokeStyle = '#e65100'; ctx.stroke();
+    ctx.beginPath(); ctx.arc(x + 6, y - 5, 4, 0, Math.PI*2); 
+    ctx.fillStyle = '#222'; ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x-2, y+6, 8, 5, -0.5, 0, Math.PI*2);
+    ctx.fillStyle = '#ffb74d'; ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x+12, y); ctx.lineTo(x+22, y+4); ctx.lineTo(x+12, y+8);
+    ctx.fillStyle = '#ff5722'; ctx.fill();
+}
+
+function drawOverlay(title, sub){
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = '#fff';
+    ctx.font = '800 40px Poppins';
+    ctx.textAlign = 'center';
+    ctx.fillText(title, W/2, H/2 - 20);
+    ctx.font = '600 20px Inter';
+    ctx.fillText(sub, W/2, H/2 + 30);
+}
+
+function loop(){
+    // Update draait alleen als we spelen, maar draw draait altijd zodat je overlays ziet
+    if(gameState === 'playing'){
+        update();
+    }
+    draw();
+    requestAnimationFrame(loop);
+}
+
+// Inputs
+function handleInput(e){
+    if(e.type === 'keydown' && e.code !== 'Space') return;
+    if(e.type === 'touchstart') e.preventDefault(); 
+    
+    if(gameState === 'menu'){
+        startGame();
+    } else if(gameState === 'playing'){
+        bird.vy = flapPower;
+    } else if(gameState === 'respawn'){
+        // Van respawn terug naar playing
+        gameState = 'playing';
+        bird.vy = flapPower; // Direct sprongetje
+    } else if(gameState === 'gameover'){
+        score = 0; lives = 3; currentLevel = 0; obstacles = []; 
+        bird.y = H/2; bird.vy = 0;
+        baseSpeed = parseFloat(speedSelect.value); speed = baseSpeed;
+        shuffle(fullLevels);
+        
+        gameState = 'playing'; 
+        bird.vy = flapPower; // Direct sprongetje
+        
+        loadSentence();
+        updateHUD();
+    } else if(gameState === 'victory'){
+        initGame();
+    }
+}
+
+window.addEventListener('keydown', handleInput);
+canvas.addEventListener('touchstart', handleInput, {passive:false});
+canvas.addEventListener('mousedown', function(e){
+    // Muisklik gedraagt zich als spatiebalk
+    if(gameState === 'playing'){
+        bird.vy = flapPower;
+    } else {
+        handleInput({type:'touchstart', preventDefault:()=>{}});
+    }
+});
+
+// Controls UI
+startBtn.addEventListener('click', () => {
+    if(gameState === 'menu' || gameState === 'gameover' || gameState === 'respawn') {
+        handleInput({type:'touchstart', preventDefault:()=>{}});
+    }
+});
+restartBtn.addEventListener('click', initGame);
+speedSelect.addEventListener('change', () => { baseSpeed = parseFloat(speedSelect.value); if(gameState==='menu') speed=baseSpeed; });
+
+// --- DATA SUBMISSION LOGIC ---
+sendDataBtn.addEventListener('click', () => {
+    const name = playerNameInp.value.trim();
+    if(!name) { alert("Please enter a name."); return; }
+    
+    sendDataBtn.disabled = true;
+    sendDataBtn.textContent = "Sending...";
+    
+    const payload = {
+        naam: name,
+        game: "ConjunctionsFlap",
+        score: score,
+        level: currentLevel + 1
+    };
+    
+    if(GOOGLE_SCRIPT_URL === "PLAATS_HIER_JE_GOOGLE_SCRIPT_APP_URL"){
+        alert("Google Script URL missing.");
+        sendDataBtn.disabled = false;
+        return;
+    }
+
+    fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(() => {
+        statusMsg.textContent = "Score sent!";
+        statusMsg.style.color = "green";
+        hasSubmitted = true;
+        setTimeout(() => {
+            submitOverlay.style.display = 'none';
+            // Na submitten: Wat doen we? Terug naar menu of doorgaan?
+            // Laten we de gebruiker terugzetten naar menu als het gameover was, 
+            // of door laten spelen als het een level-up was.
+            if(lives <= 0) {
+                 gameState = 'gameover';
+            } else {
+                 gameState = 'respawn'; // Veilig doorgaan
             }
-        });
+        }, 1500);
+    })
+    .catch(err => {
+        statusMsg.textContent = "Error.";
+        sendDataBtn.disabled = false;
+    });
+});
 
-        document.getElementById('next-level').addEventListener('click', () => {
-            if (currentLevel < levels.length - 1) {
-                if (currentLevel === compulsoryEndIndex && !isCompulsoryFinished) {
-                    showCustomAlert('Hoofduitdaging voltooid!', 'Je hebt alle verplichte A2-B1 levels gehaald! Ga door naar de B2-levels voor de complete score, of sluit nu af.', true);
-                } else {
-                    loadLevel(currentLevel + 1);
-                }
-            }
-        });
+closeModalBtn.addEventListener('click', () => {
+    submitOverlay.style.display = 'none';
+    if(lives <= 0) gameState = 'gameover';
+    else gameState = 'respawn';
+});
 
-        document.getElementById('reset-btn').addEventListener('click', () => loadLevel(currentLevel));
+initGame();
 
-        // Initialisatie
-        updateScoreboard();
-        loadLevel(currentLevel);
-    </script>
+// Polyfill roundRect
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+        if (w < 2 * r) r = w / 2;
+        if (h < 2 * r) r = h / 2;
+        this.beginPath();
+        this.moveTo(x + r, y);
+        this.arcTo(x + w, y, x + w, y + h, r);
+        this.arcTo(x + w, y + h, x, y + h, r);
+        this.arcTo(x, y + h, x, y, r);
+        this.arcTo(x, y, x + w, y, r);
+        this.closePath();
+        return this;
+    };
+}
+</script>
 </body>
 </html>
