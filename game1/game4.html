@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Reading Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+        .animate-shake { animation: shake 0.4s ease-in-out; }
+        .animate-pop { animation: pop 0.3s ease-in-out; }
+
+        .option-btn { transition: all 0.2s; }
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .custom-scroll::-webkit-scrollbar { width: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .progress-bar { transition: width 0.5s ease-in-out; }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col h-screen">
+
+    <header class="bg-white shadow-md p-4 z-10 flex justify-between items-center shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 text-white p-2 rounded-lg">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight">Reading Master</h1>
+                <p class="text-xs text-slate-500">Signaalwoorden & Verbanden</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="hidden md:flex flex-col items-end">
+                <span class="text-xs text-slate-500">Score</span>
+                <span class="font-bold text-blue-600" id="score-display">0</span>
+            </div>
+            <div class="bg-slate-100 px-3 py-1 rounded-full text-sm font-semibold text-slate-600">
+                <span id="current-q">1</span>/<span id="total-q">20</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="w-full bg-slate-200 h-2 shrink-0">
+        <div id="progress-fill" class="bg-green-500 h-2 progress-bar" style="width: 0%"></div>
+    </div>
+
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+        
+        <div id="start-screen" class="absolute inset-0 bg-white/95 z-50 flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+            <div class="bg-blue-100 p-6 rounded-full mb-6 text-blue-600 text-5xl">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h2 class="text-3xl font-bold mb-4 text-slate-800">Welkom bij de Reading Challenge!</h2>
+            <div class="max-w-md text-slate-600 mb-8">
+                <ul class="text-left text-sm text-slate-600 space-y-2 bg-slate-50 p-4 rounded-lg inline-block">
+                    <li><i class="fas fa-check text-green-500 mr-2"></i> 1e keer goed: <strong>10 punten</strong></li>
+                    <li><i class="fas fa-check text-yellow-500 mr-2"></i> 2e keer goed: <strong>5 punten</strong></li>
+                    <li><i class="fas fa-check text-orange-500 mr-2"></i> 3e keer goed: <strong>2 punten</strong></li>
+                </ul>
+            </div>
+            <button onclick="startGame()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:scale-105">
+                Start het Spel <i class="fas fa-play ml-2"></i>
+            </button>
+        </div>
+
+        <div id="optional-prompt" class="hidden absolute inset-0 bg-white/95 z-50 flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+            <div class="mb-6"><i class="fas fa-star text-yellow-500 text-6xl animate-pop"></i></div>
+            <h2 class="text-3xl font-bold mb-4 text-slate-800">Hoofduitdaging Voltooid!</h2>
+            <p class="max-w-md text-slate-600 mb-8">Score: <span class="font-bold text-blue-600 text-xl" id="prompt-score-display">0</span>. Wil je door naar B2?</p>
+            <div class="flex gap-4">
+                <button onclick="endGame()" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-6 rounded-full shadow-lg">Stoppen</button>
+                <button onclick="startOptionalContent()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full shadow-lg">Ja, naar B2!</button>
+            </div>
+        </div>
+
+        <div id="end-screen" class="hidden absolute inset-0 bg-white/95 z-50 flex flex-col items-center justify-center p-6 text-center">
+            <div class="mb-6"><i class="fas fa-trophy text-yellow-400 text-6xl animate-pop"></i></div>
+            <h2 class="text-3xl font-bold mb-2">Goed gedaan!</h2>
+            <div class="bg-slate-50 p-6 rounded-xl shadow-sm border border-slate-100 mb-8 w-full max-w-sm">
+                <div class="flex justify-between items-center mb-4 border-b pb-4">
+                    <span class="text-slate-500">Score</span>
+                    <span class="text-2xl font-bold text-blue-600" id="final-score">0</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500">Rang</span>
+                    <span class="text-xl font-bold text-purple-600" id="final-rank">Novice</span>
+                </div>
+            </div>
+            <button onclick="location.reload()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg">Opnieuw Spelen</button>
+        </div>
+
+        <div class="md:w-1/2 p-6 overflow-y-auto custom-scroll border-b md:border-r border-slate-200 bg-white">
+            <div class="max-w-2xl mx-auto">
+                <span id="text-level" class="inline-block bg-slate-100 text-slate-600 text-xs font-bold px-2 py-1 rounded mb-3 uppercase">LEVEL</span>
+                <h2 id="text-title" class="text-xl font-bold mb-4 text-slate-800">Laden...</h2>
+                <div id="text-content" class="text-lg leading-relaxed text-slate-700 space-y-4"></div>
+            </div>
+        </div>
+
+        <div class="md:w-1/2 p-6 overflow-y-auto custom-scroll bg-slate-50 flex flex-col">
+            <div class="max-w-xl mx-auto w-full flex-1 flex flex-col justify-center">
+                <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500 mb-6">
+                    <p class="text-xs text-slate-400 uppercase font-bold mb-1">Zin uit de tekst:</p>
+                    <p id="context-sentence" class="font-serif italic text-slate-700 text-lg"></p>
+                </div>
+                <h3 id="question-text" class="text-lg font-bold mb-6 text-slate-800"></h3>
+                <div id="options-container" class="grid gap-3 mb-6"></div>
+                <div id="feedback-area" class="hidden rounded-lg p-4 mb-4 animate-fade-in border">
+                    <div class="flex items-start gap-3">
+                        <div id="feedback-icon" class="text-2xl mt-1"></div>
+                        <div>
+                            <h4 id="feedback-title" class="font-bold"></h4>
+                            <p id="feedback-text" class="text-slate-700 mt-1 text-sm"></p>
+                        </div>
+                    </div>
+                </div>
+                <button id="next-btn" onclick="nextQuestion()" class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors flex justify-center items-center gap-2">
+                    Volgende Vraag <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // GAME DATA (Hetzelfde als jouw bron)
+        const gameData = [
+            { id: "text1", title: "Social Media and Friends", level: "A2", content: "Many teenagers use social media every day. However, some students say it makes them feel lonely. For example, they see photos of friends at parties and think they are not invited. Because of this, some teenagers spend more time online. In addition, they check their phone many times a day. As a result, they may have less time for real conversations.", questions: [
+                { sentence: "Many teenagers use social media every day. However, some students say it makes them feel lonely.", question: "Wat is de functie van 'however'?", options: ["Het geeft een voorbeeld.", "Het voegt extra informatie toe.", "Het geeft een tegenstelling aan.", "Het geeft een oorzaak aan."], correct: 2, explanation: "'However' contrasteert het gebruik van social media met het gevoel van eenzaamheid." },
+                { sentence: "For example, they see photos of friends at parties...", question: "Wat doet 'for example' hier?", options: ["Het vat de zin samen.", "Het geeft een illustratie van een punt.", "Het geeft een conclusie.", "Het toont een gevolg."], correct: 1, explanation: "Het introduceert een specifiek voorbeeld van waarom ze zich eenzaam voelen." },
+                { sentence: "Because of this, some teenagers spend more time online.", question: "Welke relatie geeft 'because of this' aan?", options: ["Tijd", "Reden/oorzaak", "Voorwaarde", "Vergelijking"], correct: 1, explanation: "Het koppelt de eenzaamheid als oorzaak aan het vaker online zijn." },
+                { sentence: "In addition, they check their phone many times a day.", question: "Wat is de functie van 'in addition'?", options: ["Het geeft een gevolg.", "Het voegt extra informatie toe.", "Het contrasteert meningen.", "Het geeft een voorbeeld."], correct: 1, explanation: "Het voegt een extra feit toe over hun gedrag." },
+                { sentence: "As a result, they may have less time for real conversations.", question: "Wat verbindt 'as a result'?", options: ["Reden en gevolg", "Twee voorbeelden", "Twee losse feiten", "Een voorwaarde"], correct: 0, explanation: "Het toont de uitkomst van het vele telefoongebruik." }
+            ]},
+            { id: "text2", title: "Healthy Eating Habits", level: "A2", content: "Many students want to eat healthier. However, it can be difficult to change old habits. For example, some students eat fast food every day instead of fruits and vegetables. Because of this, they may feel tired during school. In addition, they often skip breakfast, which is very important for energy. As a result, students may find it hard to concentrate in class.", questions: [
+                { sentence: "Many students want to eat healthier. However, it can be difficult...", question: "Wat is de functie van 'however'?", options: ["Voorbeeld", "Resultaat", "Extra info", "Tegenstelling"], correct: 3, explanation: "Het contrasteert de wens met de moeilijkheid." },
+                { sentence: "For example, some students eat fast food every day...", question: "Wat doet 'for example'?", options: ["Gevolg", "Concreet voorbeeld", "Samenvatting", "Conclusie"], correct: 1, explanation: "Het illustreert de slechte gewoonten." },
+                { sentence: "Because of this, they may feel tired during school.", question: "Relatie?", options: ["Tijd", "Voorwaarde", "Vergelijking", "Oorzaak en gevolg"], correct: 3, explanation: "Slecht eten (oorzaak) leidt tot moeheid (gevolg)." },
+                { sentence: "In addition, they often skip breakfast...", question: "Functie 'in addition'?", options: ["Voegt informatie toe", "Contrasteert", "Laat gevolg zien", "Geeft voorbeeld"], correct: 0, explanation: "Het voegt een tweede slechte gewoonte toe." },
+                { sentence: "As a result, students may find it hard to concentrate...", question: "Wat verbindt het?", options: ["Voorbeelden", "Voorwaarde", "Reden en gevolg", "Losse feiten"], correct: 2, explanation: "Het koppelt het dieet aan de concentratie." }
+            ]},
+            { id: "text3", title: "The Benefits and Challenges of Remote Learning", level: "B1", content: "Remote learning has become increasingly popular in recent years. However, it is not always easy for students to adapt. For example, many students struggle with staying focused at home. Because of this, some schools provide online support sessions to help learners stay on track. In addition, remote learning allows students to save time and travel costs. On the other hand, it can sometimes be difficult to participate in group discussions. Therefore, students need to develop self-discipline and effective communication skills. Finally, those who adapt well often experience increased flexibility and independence in their studies.", questions: [
+                { sentence: "Remote learning has become popular... However, it is not always easy...", question: "Functie 'however'?", options: ["Extra info", "Tegenstelling", "Gevolg", "Voorbeeld"], correct: 1, explanation: "Het stelt de populariteit tegenover de moeilijkheid." },
+                { sentence: "For example, many students struggle with staying focused...", question: "Functie 'for example'?", options: ["Voorbeeld van probleem", "Conclusie", "Gevolg", "Tegenstelling"], correct: 0, explanation: "Het benoemt een specifieke uitdaging." },
+                { sentence: "Because of this, some schools provide online support sessions...", question: "Wat laat 'because of this' zien?", options: ["Vergelijking", "Oorzaak en gevolg", "Tijd", "Voorwaarde"], correct: 1, explanation: "Hulp wordt geboden omdát studenten moeite hebben." },
+                { sentence: "In addition, remote learning allows students to save time...", question: "Functie 'in addition'?", options: ["Tegenstelling", "Voegt voordeel toe", "Voorbeeld", "Gevolg"], correct: 1, explanation: "Het voegt een positief punt toe." },
+                { sentence: "On the other hand, it can sometimes be difficult to participate in group discussions.", question: "Rol van 'on the other hand'?", options: ["Alternatief/tegenstelling", "Extra voordeel", "Oorzaak en gevolg", "Voorbeeld"], correct: 0, explanation: "Het introduceert een nadeel na de voordelen." },
+                { sentence: "Therefore, students need to develop self-discipline...", question: "Wat laat 'therefore' zien?", options: ["Voorbeeld", "Tegenstelling", "Gevolg/conclusie", "Extra info"], correct: 2, explanation: "Het trekt een logische conclusie uit de uitdagingen." },
+                { sentence: "Finally, those who adapt well often experience increased flexibility...", question: "Wat laat 'finally' zien?", options: ["Laatste conclusie/resultaat", "Oorzaak", "Voorbeeld", "Vergelijking"], correct: 0, explanation: "Het sluit de lijst met effecten af." }
+            ]},
+            { id: "text4", title: "The Rise of Renewable Energy Technologies", level: "B2", content: "Renewable energy sources are becoming important. However, transitioning presents challenges. For example, solar panels require space. Nevertheless, technology helps. In addition, governments invest. On the other hand, some communities resist. Therefore, balance is crucial. Finally, successful countries grow.", questions: [
+                { sentence: "However, transitioning from fossil fuels to renewable energy presents several challenges.", question: "Wat laat 'however' zien?", options: ["Contrasteert belang met uitdagingen", "Extra voordelen", "Gevolg van klimaat", "Voorbeeld van energie"], correct: 0, explanation: "Het contrasteert de noodzaak met de praktijk." },
+                { sentence: "For example, solar panels require significant space...", question: "Functie 'for example'?", options: ["Conclusie", "Positief effect", "Samenvatting", "Illustreert specifieke problemen"], correct: 3, explanation: "Het maakt de uitdagingen concreet." },
+                { sentence: "Nevertheless, advances in technology are helping...", question: "Wat laat 'nevertheless' zien?", options: ["Alternatief", "Oplossing ondanks problemen", "Extra probleem", "Vergelijking"], correct: 1, explanation: "Het geeft hoop ondanks de uitdagingen." },
+                { sentence: "In addition, governments around the world are investing...", question: "Functie 'in addition'?", options: ["Tegenstelling", "Oorzaak-gevolg", "Voegt extra maatregel toe", "Probleem"], correct: 2, explanation: "Voegt een actie toe naast de technologie." },
+                { sentence: "On the other hand, some communities are resistant...", question: "Rol 'on the other hand'?", options: ["Extra voordeel", "Samenvatting", "Tegenargument/beperking", "Gevolg"], correct: 2, explanation: "Toont de sociale weerstand." },
+                { sentence: "Therefore, it is crucial to balance environmental benefits...", question: "Wat laat 'therefore' zien?", options: ["Extra info", "Succesverhaal", "Logisch gevolg", "Tegenstelling"], correct: 2, explanation: "De noodzaak tot balans volgt uit de eerdere punten." },
+                { sentence: "Finally, those countries that successfully integrate...", question: "Wat laat 'finally' zien?", options: ["Probleem", "Laatste effect/resultaat", "Voorbeeld innovatie", "Contrasteert beleid"], correct: 1, explanation: "Het eindoordeel van het succes." }
+            ]}
+        ];
+
+        // STATE
+        let currentTextIndex = 0, currentQuestionIndex = 0, score = 0, attempts = 0, answeredQuestions = 0, isOptionalMode = false;
+        let totalQuestions = gameData.reduce((acc, text) => acc + text.questions.length, 0);
+
+        // UI ELEMENTS
+        const scoreDisplay = document.getElementById('score-display');
+        const progressFill = document.getElementById('progress-fill');
+
+        // NEW REPORTING FUNCTION
+        function reportScore(currentScore) {
+            window.parent.postMessage({
+                type: 'UPDATE_SCORE',
+                gameFile: window.location.pathname.split('/').pop(),
+                score: currentScore
+            }, '*');
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('total-q').innerText = totalQuestions;
+            loadContent();
+        }
+
+        function loadContent() {
+            const text = gameData[currentTextIndex], q = text.questions[currentQuestionIndex];
+            document.getElementById('text-title').innerText = text.title;
+            document.getElementById('text-level').innerText = `LEVEL ${text.level}`;
+            document.getElementById('text-content').innerText = text.content;
+            document.getElementById('context-sentence').innerText = `"${q.sentence}"`;
+            document.getElementById('question-text').innerText = q.question;
+            document.getElementById('current-q').innerText = answeredQuestions + 1;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            document.getElementById('feedback-area').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+            attempts = 0;
+
+            q.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn w-full text-left p-4 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium";
+                btn.innerHTML = `<span class="font-bold text-blue-600 mr-2">${String.fromCharCode(65+i)})</span> ${opt}`;
+                btn.onclick = () => checkAnswer(i, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(idx, btn) {
+            const q = gameData[currentTextIndex].questions[currentQuestionIndex];
+            disableButtons();
+            attempts++;
+
+            if (idx === q.correct) {
+                let p = attempts === 1 ? 10 : (attempts === 2 ? 5 : 2);
+                score += p;
+                scoreDisplay.innerText = score;
+                reportScore(score); // REAL-TIME UPDATE
+                btn.classList.add('bg-green-100', 'border-green-500', 'text-green-800');
+                showFeedback(true, q.explanation);
+            } else {
+                if (attempts >= 3) {
+                    showFeedback(false, q.explanation);
+                    document.getElementById('options-container').children[q.correct].classList.add('bg-green-100', 'border-green-500');
+                } else {
+                    btn.classList.add('animate-shake', 'bg-red-50', 'border-red-300');
+                    enableButtons();
+                    btn.disabled = true;
+                    return;
+                }
+            }
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            answeredQuestions++;
+            const pct = (answeredQuestions / totalQuestions) * 100;
+            progressFill.style.width = `${pct}%`;
+            
+            currentQuestionIndex++;
+            if (currentQuestionIndex >= gameData[currentTextIndex].questions.length) {
+                currentTextIndex++;
+                currentQuestionIndex = 0;
+            }
+
+            if (currentTextIndex === 3 && !isOptionalMode) {
+                document.getElementById('optional-prompt').classList.remove('hidden');
+                document.getElementById('prompt-score-display').innerText = score;
+                return;
+            }
+
+            if (currentTextIndex >= gameData.length) endGame(); else loadContent();
+        }
+
+        function startOptionalContent() {
+            document.getElementById('optional-prompt').classList.add('hidden');
+            isOptionalMode = true;
+            loadContent();
+        }
+
+        function endGame() {
+            document.getElementById('optional-prompt').classList.add('hidden');
+            document.getElementById('end-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = score;
+            reportScore(score); // FINAL REPORT
+            
+            const pct = (score / (totalQuestions * 10)) * 100;
+            const rank = pct >= 90 ? "Engels Expert" : (pct >= 75 ? "Taal Meester" : "Taalverkenner");
+            document.getElementById('final-rank').innerText = rank;
+        }
+
+        function disableButtons() { document.querySelectorAll('.option-btn').forEach(b => b.disabled = true); }
+        function enableButtons() { document.querySelectorAll('.option-btn').forEach(b => b.disabled = false); }
+        
+        function showFeedback(correct, text) {
+            const area = document.getElementById('feedback-area');
+            area.classList.remove('hidden');
+            area.className = `rounded-lg p-4 mb-4 border ${correct ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'}`;
+            document.getElementById('feedback-icon').innerHTML = `<i class="fas ${correct ? 'fa-check-circle text-green-500' : 'fa-info-circle text-blue-500'}"></i>`;
+            document.getElementById('feedback-title').innerText = correct ? "Correct!" : "Uitleg";
+            document.getElementById('feedback-text').innerText = text;
+        }
+    </script>
+</body>
+</html>
