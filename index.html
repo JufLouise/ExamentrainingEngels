@@ -125,6 +125,15 @@
         </div>
     </main>
 
+    <footer class="max-w-6xl mx-auto mt-12 p-6 flex justify-center">
+        <div class="bg-white/50 p-4 rounded-2xl flex items-center gap-3 border border-slate-200 shadow-sm">
+            <i class="fas fa-key text-slate-400"></i>
+            <input type="password" id="adminPass" placeholder="Admin wachtwoord..." 
+                   class="bg-transparent outline-none text-xs w-40"
+                   oninput="checkAdminPass()">
+        </div>
+    </footer>
+
     <div id="gameModal" class="modal flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-5xl rounded-2xl overflow-hidden shadow-2xl animate-pop">
             <div class="p-4 bg-slate-100 flex justify-between items-center border-b border-slate-200">
@@ -144,6 +153,7 @@
     <script>
         // --- CONFIGURATIE ---
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySEVQMWJHmg4jZV6RyA3TVohEo6n2OdNvCaJP_NeE9IDIaWaUczEAqR-V6VDc01kiy-g/exec';
+        const ADMIN_PASSWORD = 'IkBenMartijnKoops';
 
         let progress = JSON.parse(localStorage.getItem('edu_games_progress')) || {
             'game1.html': 0, 'game2.html': 0, 'game3.html': 0, 'game4.html': 0
@@ -158,13 +168,15 @@
 
         // --- GAME LOGICA ---
         function updateUI() {
+            const isAdmin = localStorage.getItem('admin_unlocked') === 'true';
+
             // Check Game 3 Unlock
-            if (progress['game2.html'] >= 10) {
-                unlock('game3.html', 'Level 10 gehaald! ✅');
+            if (progress['game2.html'] >= 10 || isAdmin) {
+                unlock('game3.html', isAdmin ? 'Admin Mode Actief ✅' : 'Level 10 gehaald! ✅');
             }
             // Check Game 4 Unlock
-            if (progress['game3.html'] >= 18) {
-                unlock('game4.html', 'Score 18+ gehaald! ✅');
+            if (progress['game3.html'] >= 18 || isAdmin) {
+                unlock('game4.html', isAdmin ? 'Admin Mode Actief ✅' : 'Score 18+ gehaald! ✅');
             }
         }
 
@@ -173,6 +185,8 @@
             const btn = document.getElementById(`btn-${gameId}`);
             const msg = document.getElementById(`msg-${gameId}`);
             
+            if(!card || !btn) return;
+
             card.classList.remove('locked');
             btn.disabled = false;
             btn.classList.remove('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
@@ -182,6 +196,15 @@
             msg.classList.remove('text-red-500');
             msg.classList.add('text-green-600');
             msg.innerHTML = `<i class="fas fa-check-circle mr-1"></i> ${message}`;
+        }
+
+        function checkAdminPass() {
+            const input = document.getElementById('adminPass').value;
+            if (input === ADMIN_PASSWORD) {
+                localStorage.setItem('admin_unlocked', 'true');
+                updateUI();
+                alert('Alle spellen zijn nu ontgrendeld!');
+            }
         }
 
         function openGame(file, title) {
@@ -206,7 +229,6 @@
             const payload = { naam: name, game: gameFile, score: score };
 
             try {
-                // 'no-cors' is nodig voor Google Apps Script POST requests
                 await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -215,7 +237,7 @@
                     body: JSON.stringify(payload)
                 });
             } catch (e) {
-                console.log("Sheet update error (waarschijnlijk CORS, dit is normaal):", e);
+                console.log("Sheet update error:", e);
             }
         }
 
@@ -224,7 +246,6 @@
             if (event.data.type === 'UPDATE_SCORE') {
                 const { gameFile, score } = event.data;
                 
-                // Alleen opslaan/verzenden als het een verbetering is
                 if (score > progress[gameFile]) {
                     progress[gameFile] = score;
                     localStorage.setItem('edu_games_progress', JSON.stringify(progress));
@@ -237,6 +258,7 @@
         function resetProgress() {
             if(confirm('Weet je het zeker? Je voortgang en scores worden gewist.')) {
                 localStorage.removeItem('edu_games_progress');
+                localStorage.removeItem('admin_unlocked');
                 location.reload();
             }
         }
