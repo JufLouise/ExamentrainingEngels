@@ -64,16 +64,22 @@
 
     <main class="max-w-6xl mx-auto">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <div id="card-game1.html" class="game-card bg-white p-6 rounded-2xl shadow-lg border-b-8 border-blue-500 flex flex-col justify-between">
+            <div id="card-game1.html" class="game-card bg-white p-6 rounded-2xl shadow-lg border-b-8 border-yellow-500 flex flex-col justify-between">
                 <div>
-                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-2xl mb-4">
-                        <i class="fas fa-dove"></i>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-lg flex items-center justify-center text-2xl">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">Energizer</span>
                     </div>
                     <h3 class="font-bold text-lg text-slate-800 mb-2">Conjunction Flappy Bird</h3>
-                    <p class="text-xs text-slate-500 mb-6 leading-relaxed">Oefen verbindingswoorden terwijl je door obstakels vliegt.</p>
+                    <p class="text-xs text-slate-500 mb-4 leading-relaxed">Oefen verbindingswoorden terwijl je door obstakels vliegt.</p>
+                    <p class="text-[10px] text-green-600 font-semibold mb-6 italic">
+                        <i class="fas fa-star mr-1"></i> Voor dit spel is geen minimale score nodig!
+                    </p>
                 </div>
                 <button onclick="openGame('game1.html', 'Conjunction Flappy Bird')" 
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition-all shadow-md">
+                        class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded-xl font-bold transition-all shadow-md">
                     Speel Nu
                 </button>
             </div>
@@ -170,11 +176,11 @@
         function updateUI() {
             const isAdmin = localStorage.getItem('admin_unlocked') === 'true';
 
-            // Check Game 3 Unlock
+            // Spel 1 heeft geen lock/score nodig, maar we checken Spel 3 en 4
             if (progress['game2.html'] >= 10 || isAdmin) {
                 unlock('game3.html', isAdmin ? 'Admin Mode Actief ✅' : 'Level 10 gehaald! ✅');
             }
-            // Check Game 4 Unlock
+            
             if (progress['game3.html'] >= 18 || isAdmin) {
                 unlock('game4.html', isAdmin ? 'Admin Mode Actief ✅' : 'Score 18+ gehaald! ✅');
             }
@@ -204,7 +210,7 @@
                 localStorage.setItem('admin_unlocked', 'true');
                 updateUI();
                 alert('Admin Mode geactiveerd! Alle spellen zijn ontgrendeld.');
-                document.getElementById('adminPass').value = ''; // Veld leegmaken
+                document.getElementById('adminPass').value = ''; 
             }
         }
 
