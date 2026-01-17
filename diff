@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Games Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+            color: #1f2937;
+        }
+        .game-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .game-card.locked { filter: grayscale(1); opacity: 0.6; cursor: not-allowed; }
+        .game-card:not(.locked):hover { transform: translateY(-8px); shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+        
+        iframe { border: none; width: 100%; height: 80vh; border-radius: 0.75rem; }
+        
+        .modal { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(15, 23, 42, 0.9); 
+            z-index: 50; 
+            backdrop-filter: blur(4px);
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.95); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop { animation: pop 0.3s ease-out forwards; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <header class="max-w-6xl mx-auto bg-white shadow-xl p-6 rounded-2xl mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="flex items-center gap-4">
+            <div class="bg-blue-600 text-white p-4 rounded-2xl text-3xl shadow-lg">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-2xl leading-tight text-slate-800">English Learning Portal</h1>
+                <p class="text-sm text-slate-500">Voltooi games om nieuwe levels vrij te spelen</p>
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center gap-4">
+            <div class="flex items-center gap-3 bg-slate-100 p-3 rounded-xl border-2 border-slate-200 focus-within:border-blue-500 transition-all">
+                <i class="fas fa-user text-slate-400"></i>
+                <input type="text" id="playerName" placeholder="Vul je naam in..." 
+                       class="bg-transparent outline-none text-sm font-semibold w-40"
+                       onchange="saveName()">
+            </div>
+            <button onclick="resetProgress()" class="text-xs text-red-400 hover:text-red-600 transition-colors font-medium">
+                <i class="fas fa-trash-alt mr-1"></i> Reset progress
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <div id="card-game1.html" class="game-card bg-white p-6 rounded-2xl shadow-lg border-b-8 border-blue-500 flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-2xl mb-4">
+                    <i class="fas fa-dove"></i>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800 mb-2">Conjunction Flappy Bird</h3>
+                <p class="text-xs text-slate-500 mb-6 leading-relaxed">Oefen verbindingswoorden terwijl je door obstakels vliegt.</p>
+            </div>
+            <button onclick="openGame('game1.html', 'Conjunction Flappy Bird')" 
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition-all shadow-md">
+                Speel Nu
+            </button>
+        </div>
+
+        <div id="card-game2.html" class="game-card bg-white p-6 rounded-2xl shadow-lg border-b-8 border-cyan-500 flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 bg-cyan-100 text-cyan-600 rounded-lg flex items-center justify-center text-2xl mb-4">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800 mb-2">Sentence Structure</h3>
+                <p class="text-xs text-slate-500 mb-6 leading-relaxed">Analyseer zinsdelen en sleep ze naar de juiste plek.</p>
+            </div>
+            <button onclick="openGame('game2.html', 'Sentence Structure')" 
+                    class="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 rounded-xl font-bold transition-all shadow-md">
+                Speel Nu
+            </button>
+        </div>
+
+        <div id="card-game3.html" class="game-card locked bg-white p-6 rounded-2xl shadow-lg border-b-8 border-orange-400 flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center text-2xl mb-4">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800 mb-2">Reading Skills</h3>
+                <p id="msg-game3.html" class="text-xs text-red-500 font-semibold mb-6">
+                    <i class="fas fa-lock mr-1"></i> Unlock bij level 10 van Spel 2
+                </p>
+            </div>
+            <button id="btn-game3.html" disabled onclick="openGame('game3.html', 'English Reading Skills')" 
+                    class="w-full bg-slate-200 text-slate-400 py-3 rounded-xl font-bold cursor-not-allowed transition-all">
+                Vergrendeld
+            </button>
+        </div>
+
+        <div id="card-game4.html" class="game-card locked bg-white p-6 rounded-2xl shadow-lg border-b-8 border-purple-500 flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center text-2xl mb-4">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800 mb-2">Signalwords Challenge</h3>
+                <p id="msg-game4.html" class="text-xs text-red-500 font-semibold mb-6">
+                    <i class="fas fa-lock mr-1"></i> Unlock bij score 18/27 in Spel 3
+                </p>
+            </div>
+            <button id="btn-game4.html" disabled onclick="openGame('game4.html', 'Signalwords Challenge')" 
+                    class="w-full bg-slate-200 text-slate-400 py-3 rounded-xl font-bold cursor-not-allowed transition-all">
+                Vergrendeld
+            </button>
+        </div>
+    </main>
+
+    <div id="gameModal" class="modal flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-5xl rounded-2xl overflow-hidden shadow-2xl animate-pop">
+            <div class="p-4 bg-slate-100 flex justify-between items-center border-b border-slate-200">
+                <div class="flex items-center gap-2">
+                    <span id="modalIcon" class="text-blue-600"></span>
+                    <h2 id="modalTitle" class="font-bold text-slate-800">Spel</h2>
+                </div>
+                <button onclick="closeGame()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-bold transition-colors">
+                    Afsluiten <i class="fas fa-times ml-1"></i>
+                </button>
+            </div>
+            <div id="iframeContainer" class="bg-slate-800">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATIE ---
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySEVQMWJHmg4jZV6RyA3TVohEo6n2OdNvCaJP_NeE9IDIaWaUczEAqR-V6VDc01kiy-g/exec';
+
+        let progress = JSON.parse(localStorage.getItem('edu_games_progress')) || {
+            'game1.html': 0, 'game2.html': 0, 'game3.html': 0, 'game4.html': 0
+        };
+
+        // Naam laden
+        document.getElementById('playerName').value = localStorage.getItem('player_name') || '';
+
+        function saveName() {
+            localStorage.setItem('player_name', document.getElementById('playerName').value);
+        }
+
+        // --- GAME LOGICA ---
+        function updateUI() {
+            // Check Game 3 Unlock
+            if (progress['game2.html'] >= 10) {
+                unlock('game3.html', 'Level 10 gehaald! ✅');
+            }
+            // Check Game 4 Unlock
+            if (progress['game3.html'] >= 18) {
+                unlock('game4.html', 'Score 18+ gehaald! ✅');
+            }
+        }
+
+        function unlock(gameId, message) {
+            const card = document.getElementById(`card-${gameId}`);
+            const btn = document.getElementById(`btn-${gameId}`);
+            const msg = document.getElementById(`msg-${gameId}`);
+            
+            card.classList.remove('locked');
+            btn.disabled = false;
+            btn.classList.remove('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
+            btn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'text-white', 'shadow-md');
+            btn.innerText = 'Speel Nu';
+            
+            msg.classList.remove('text-red-500');
+            msg.classList.add('text-green-600');
+            msg.innerHTML = `<i class="fas fa-check-circle mr-1"></i> ${message}`;
+        }
+
+        function openGame(file, title) {
+            if (!localStorage.getItem('player_name')) {
+                alert('Vul eerst je naam in bovenin het scherm!');
+                return;
+            }
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('iframeContainer').innerHTML = `<iframe src="${file}"></iframe>`;
+            document.getElementById('gameModal').style.display = 'flex';
+        }
+
+        function closeGame() {
+            document.getElementById('gameModal').style.display = 'none';
+            document.getElementById('iframeContainer').innerHTML = '';
+            updateUI();
+        }
+
+        // --- DATA VERZENDEN ---
+        async function sendToGoogle(gameFile, score) {
+            const name = localStorage.getItem('player_name');
+            const payload = { naam: name, game: gameFile, score: score };
+
+            try {
+                // 'no-cors' is nodig voor Google Apps Script POST requests
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (e) {
+                console.log("Sheet update error (waarschijnlijk CORS, dit is normaal):", e);
+            }
+        }
+
+        // Luisteren naar scores vanuit de Iframes
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'UPDATE_SCORE') {
+                const { gameFile, score } = event.data;
+                
+                // Alleen opslaan/verzenden als het een verbetering is
+                if (score > progress[gameFile]) {
+                    progress[gameFile] = score;
+                    localStorage.setItem('edu_games_progress', JSON.stringify(progress));
+                    sendToGoogle(gameFile, score);
+                    updateUI();
+                }
+            }
+        });
+
+        function resetProgress() {
+            if(confirm('Weet je het zeker? Je voortgang en scores worden gewist.')) {
+                localStorage.removeItem('edu_games_progress');
+                location.reload();
+            }
+        }
+
+        // Start Up
+        updateUI();
+    </script>
+</body>
+</html>
